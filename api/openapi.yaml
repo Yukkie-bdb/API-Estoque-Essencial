@@ -1,0 +1,210 @@
+openapi: 3.0.3
+info:
+  title: API de Controle de Estoque
+  description: Documentação da API PHP para gerenciamento de produtos e movimentação de estoque.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost/estoque/api
+    description: Servidor Local
+
+paths:
+  /produtos.php:
+    get:
+      summary: Listar produtos ou buscar por ID
+      description: Retorna todos os produtos cadastrados ou apenas um produto específico se o ID for fornecido.
+      parameters:
+        - name: id
+          in: query
+          required: false
+          description: ID do produto para consulta específica
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Operação realizada com sucesso
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/Produto'
+                  - $ref: '#/components/schemas/Produto'
+        '500':
+          description: Erro no servidor ou banco de dados
+
+    post:
+      summary: Cadastrar produto ou movimentar estoque
+      description: Permite criar um novo produto ou realizar uma movimentação de entrada/saída de estoque enviando a ação correspondente.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/NovoProduto'
+                - $ref: '#/components/schemas/MovimentacaoEstoque'
+      responses:
+        '200':
+          description: Movimentação realizada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sucesso:
+                    type: boolean
+                    example: true
+                  nova_quantidade:
+                    type: integer
+                    example: 15
+        '201':
+          description: Produto criado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sucesso:
+                    type: boolean
+                    example: true
+                  id:
+                    type: integer
+                    example: 1
+        '400':
+          description: Erro de dados ou produto não encontrado
+
+    put:
+      summary: Atualizar produto
+      description: Atualiza os dados de um produto existente com base no ID enviado no corpo da requisição.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+                - nome
+                - categoria
+                - preco
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                nome:
+                  type: string
+                  example: "Teclado Mecânico"
+                categoria:
+                  type: string
+                  example: "Periféricos"
+                preco:
+                  type: number
+                  format: float
+                  example: 250.00
+      responses:
+        '200':
+          description: Produto atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sucesso:
+                    type: boolean
+                    example: true
+        '400':
+          description: ID não informado ou dados incompletos
+
+    delete:
+      summary: Deletar produto
+      description: Remove um produto do banco de dados com base no ID passado via parâmetro GET.
+      parameters:
+        - name: id
+          in: query
+          required: true
+          description: ID do produto a ser deletado
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Produto deletado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sucesso:
+                    type: boolean
+                    example: true
+        '400':
+          description: ID não informado
+
+components:
+  schemas:
+    Produto:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        nome:
+          type: string
+          example: "Mouse Gamer"
+        categoria:
+          type: string
+          example: "Acessórios"
+        quantidade:
+          type: integer
+          example: 10
+        preco:
+          type: number
+          format: float
+          example: 150.50
+
+    NovoProduto:
+      type: object
+      required:
+        - nome
+        - categoria
+        - quantidade
+        - preco
+      properties:
+        nome:
+          type: string
+          example: "Mouse Gamer"
+        categoria:
+          type: string
+          example: "Acessórios"
+        quantidade:
+          type: integer
+          example: 10
+        preco:
+          type: number
+          format: float
+          example: 150.50
+
+    MovimentacaoEstoque:
+      type: object
+      required:
+        - acao
+        - id
+        - tipo
+        - quantidade
+      properties:
+        acao:
+          type: string
+          example: "movimentar"
+        id:
+          type: integer
+          example: 1
+        tipo:
+          type: string
+          enum: [entrada, saida]
+          example: "entrada"
+        quantidade:
+          type: integer
+          example: 5
