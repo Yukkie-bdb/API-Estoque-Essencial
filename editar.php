@@ -1,3 +1,37 @@
+<?php
+require_once 'api/conexao.php';
+
+$identificador = intval($_GET['id'] ?? 0);
+if ($identificador <= 0) {
+    header("Location: index.php");
+    exit;
+}
+
+$mensagemErro = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nome = trim($_POST['nome'] ?? '');
+    $categoria = trim($_POST['categoria'] ?? '');
+    $preco = floatval(str_replace(',', '.', $_POST['preco'] ?? 0));
+
+    if (!empty($nome) && !empty($categoria)) {
+        $instrucao = $pdo->prepare("UPDATE produtos SET nome = ?, categoria = ?, preco = ? WHERE id = ?");
+        $instrucao->execute([$nome, $categoria, $preco, $identificador]);
+        header("Location: index.php");
+        exit;
+    } else {
+        $mensagemErro = "Preencha todos os campos obrigatórios.";
+    }
+}
+
+$instrucao = $pdo->prepare("SELECT * FROM produtos WHERE id = ?");
+$instrucao->execute([$identificador]);
+$produto = $instrucao->fetch(PDO::FETCH_ASSOC);
+
+if (!$produto) {
+    header("Location: index.php");
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -16,63 +50,27 @@
 
         <main>
             <section class="card">
-                <form id="form-editar">
-                    <input type="hidden" id="id">
-                    <div class="form-group">
-                        <label for="nome">Nome do Produto:</label>
-                        <input type="text" id="nome" required>
+                <?php if (!empty($mensagemErro)): ?>
+                    <p style="color: red;"><?php echo $mensagemErro; ?></p>
+                <?php endif; ?>
+                <form action="editar.php?id=<?php echo $identificador; ?>" method="POST">
+                    <input type="hidden" name="id" value="<?php echo $produto['id']; ?>">
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="nome" style="display: block; margin-bottom: 5px;">Nome do Produto:</label>
+                        <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($produto['nome']); ?>" required style="width: 100%; padding: 8px; box-sizing: border-box;">
                     </div>
-                    <div class="form-group">
-                        <label for="categoria">Categoria:</label>
-                        <input type="text" id="categoria" required>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="categoria" style="display: block; margin-bottom: 5px;">Categoria:</label>
+                        <input type="text" id="categoria" name="categoria" value="<?php echo htmlspecialchars($produto['categoria']); ?>" required style="width: 100%; padding: 8px; box-sizing: border-box;">
                     </div>
-                    <div class="form-group">
-                        <label for="preco">Preço (R$):</label>
-                        <input type="number" step="0.01" id="preco" min="0" required>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="preco" style="display: block; margin-bottom: 5px;">Preço (R$):</label>
+                        <input type="number" step="0.01" id="preco" name="preco" value="<?php echo $produto['preco']; ?>" min="0" required style="width: 100%; padding: 8px; box-sizing: border-box;">
                     </div>
-                    <button type="submit" class="btn btn-primary">Atualizar Produto</button>
+                    <button type="submit" class="btn btn-primary" style="padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Atualizar Produto</button>
                 </form>
             </section>
         </main>
     </div>
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const produtoId = urlParams.get('id');
-
-        async function carregarProduto() {
-            const res = await fetch(`api/produtos.php?id=${produtoId}`);
-            const produto = await res.json();
-            if (produto && produto.id) {
-                document.getElementById('id').value = produto.id;
-                document.getElementById('nome').value = produto.nome;
-                document.getElementById('categoria').value = produto.categoria;
-                document.getElementById('preco').value = produto.preco;
-            } else {
-                alert('Produto não encontrado!');
-                window.location.href = 'index.php';
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', carregarProduto);
-
-        document.getElementById('form-editar').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const dadosAtualizados = {
-                id: document.getElementById('id').value,
-                nome: document.getElementById('nome').value,
-                categoria: document.getElementById('categoria').value,
-                preco: document.getElementById('preco').value
-            };
-            const response = await fetch('api/produtos.php', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dadosAtualizados)
-            });
-            if (response.ok) {
-                // alert('Produto atualizado com sucesso!');
-                window.location.href = 'index.php';
-            }
-        });
-    </script>
 </body>
 </html>
