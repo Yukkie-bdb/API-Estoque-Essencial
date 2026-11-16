@@ -65,19 +65,19 @@ API RESTful desenvolvida em PHP puro com banco de dados SQLite para gerenciament
 1. Clone este repositorio para a pasta `htdocs` do XAMPP (geralmente localizada em `C:\xampp\htdocs\`).
 2. Abra o **XAMPP Control Panel** e clique em **Start** no serviço do **Apache** *(não é necessário iniciar o MySQL, pois o projeto usa SQLite)*.
 3. Abra o navegador e acesse:
-   - **Página Principal:** `http://localhost/nome-da-pasta-do-projeto/`
-   - **Documentação da API:** `http://localhost/nome-da-pasta-do-projeto/api/docs.html`
+   - **Página Principal:** `http://localhost/estoque/`
+   - **Documentação da API:** `http://localhost/estoque/api/docs.html`
 
 ### Opção 2: Utilizando o Servidor Embutido do PHP (Terminal)
 
 1. Clone este repositório:
    ```bash
-   git clone https://github.com/seu-usuario/seu-repositorio.git
+   git clone https://github.com/Yukkie-bdb/API-Estoque-Essencial
    ```
 
 2. Acesse a pasta do projeto pelo terminal:
    ```bash
-   cd seu-repositorio
+   cd eestoque
    ```
 
 3. Inicie o servidor embutido do PHP:
